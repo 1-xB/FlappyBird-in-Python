@@ -1,7 +1,14 @@
 import random
 import pygame
+import json
 from sys import exit
 
+try:
+    with open('score.json', 'r') as json_file:
+        score_data = json.load(json_file)
+    score_json = score_data["score"]
+except:
+    score_json = 0
 
 class Plane:
     def __init__(self):
@@ -18,8 +25,7 @@ class Plane:
     def draw(self):
         global on, dead
         screen.blit(self.surface, self.rect)
-        if self.jump :
-            print(self.rect.y)
+        if self.jump:
             if self.rect.y >= -100:
                 self.rect.y += self.gravity
                 self.gravity += 0.5
@@ -43,8 +49,6 @@ class Plane:
                 self.jump = False
                 self.gravity = -10
                 self.rect.y -= self.gravity
-                print(self.rect.y)
-
 
     def physics(self):
         if event.type == pygame.KEYDOWN:
@@ -68,16 +72,16 @@ def pipes(przeszkody):
 
 
 def pipes2(przeszkody_1):
-        if przeszkody_1:
-            if not dead:
-                pipe_speed = 4
-            else:
-                pipe_speed = 0
-            for pipe2 in przeszkody_1:
-                screen.blit(piperotate, pipe2)
-                pipe2.x -= pipe_speed
-            przeszkody_1 = [obstacle for obstacle in przeszkody_1 if obstacle.x > -70]
-        return przeszkody_1
+    if przeszkody_1:
+        if not dead:
+            pipe_speed = 4
+        else:
+            pipe_speed = 0
+        for pipe2 in przeszkody_1:
+            screen.blit(piperotate, pipe2)
+            pipe2.x -= pipe_speed
+        przeszkody_1 = [obstacle for obstacle in przeszkody_1 if obstacle.x > -70]
+    return przeszkody_1
 
 
 def kolizje(rect, pipes1):
@@ -105,11 +109,12 @@ def kolizje2(rect, pipes1):
 
 def score_update():
     global score_1, start_time, old_time
-    if start_time - old_time > 1800:
-        old_time = start_time
-        score_1 += 1
-        if score_1 > 0:
-            point.play()
+    if not start_menu:
+        if start_time - old_time > 1800:
+            old_time = start_time
+            score_1 += 1
+            if score_1 > 0:
+                point.play()
 
 
 pygame.mixer.init()
@@ -132,10 +137,6 @@ pygame.display.set_caption('Flappy Bird')
 pygame.display.set_icon(pygame.image.load('img/bird1.png').convert_alpha())
 
 font_for_score = pygame.font.Font('font/Pixeltype.ttf', 110)
-
-restart = pygame.image.load('img/restart.png').convert_alpha()
-restart_rect = restart.get_rect(center=(432, 465))
-background = pygame.image.load('img/bg.png').convert_alpha()
 
 # ground
 ground = pygame.image.load('img/ground.png').convert_alpha()
@@ -166,6 +167,25 @@ pygame.time.set_timer(pipes_timer_2, 1700)
 przeszkody = []
 przeszkody_1 = []
 
+# menu start
+start_menu = True
+napis_flappy = pygame.image.load('napis-FlappyBird.png').convert_alpha()
+napis_bigger = pygame.transform.scale(napis_flappy, (napis_flappy.get_width() * 4, napis_flappy.get_height() * 4))
+
+play = pygame.image.load('play.png').convert_alpha()
+play_bigger = pygame.transform.scale(play, (play.get_width() * 3, play.get_height() * 3))
+play_rect = play_bigger.get_rect(center=(432, 550))
+
+#dead
+
+menu = pygame.image.load('dead-menu.png').convert_alpha()
+menu_bigger = pygame.transform.scale(menu, (menu.get_width() * 4, menu.get_height() * 4))
+menu_rect = menu_bigger.get_rect(center=(432, 465))
+
+restart = pygame.image.load('img/restart.png').convert_alpha()
+restart_rect = restart.get_rect(center=(432, 515))
+background = pygame.image.load('img/bg.png').convert_alpha()
+
 while on:
     start_time = pygame.time.get_ticks()
     ran = random.randint(500, 965)
@@ -174,6 +194,12 @@ while on:
             on = False
             pygame.quit()
             exit()
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if play_rect.collidepoint(event.pos):
+                print('xd')
+                start_menu = False
+
         if dead:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if restart_rect.collidepoint(event.pos):
@@ -202,15 +228,17 @@ while on:
                 angle = -90
                 plane.surface = pygame.transform.rotate(plane.surface, angle)
                 plane.plane_index = 0
-        if event.type == pipes_timer:
-            pipe1 = pygame.image.load('img/pipe.png').convert_alpha()
-            przeszkody.append(pipe1.get_rect(center=(932, ran)))
-        if event.type == pipes_timer_2:
-            pipe2 = pygame.image.load('img/pipe.png').convert_alpha()
-            piperotate = pygame.transform.rotate(pipe2, 180)
-            ran1 = ran - 800
-            przeszkody_1.append(piperotate.get_rect(center=(932, ran1)))
-        if not dead:
+        if not start_menu:
+            if event.type == pipes_timer:
+                pipe1 = pygame.image.load('img/pipe.png').convert_alpha()
+                przeszkody.append(pipe1.get_rect(center=(932, ran)))
+            if event.type == pipes_timer_2:
+                pipe2 = pygame.image.load('img/pipe.png').convert_alpha()
+                piperotate = pygame.transform.rotate(pipe2, 180)
+                ran1 = ran - 800
+                przeszkody_1.append(piperotate.get_rect(center=(932, ran1)))
+
+        if not dead and not start_menu:
             plane.physics()
 
     screen.blit(background, (0, 0))
@@ -218,14 +246,19 @@ while on:
     przeszkody = pipes(przeszkody)
     przeszkody_1 = pipes2(przeszkody_1)
     screen.blit(ground, (ground_scroll, 762))
-    if dead:
-        print('xd')
-        screen.blit(restart, restart_rect)
+    if start_menu:
+        screen.blit(napis_bigger, (250, 100))
+        screen.blit(play_bigger, play_rect)
+
     if not dead:
         ground_scroll -= ground_speed
         if abs(ground_scroll) > 35:
             ground_scroll = 0
     plane.draw()
+
+    if dead:
+        screen.blit(menu_bigger, menu_rect)
+        screen.blit(restart, restart_rect)
     if not dead:
         dead = kolizje(plane.rect, przeszkody)
     if not dead:
@@ -235,6 +268,5 @@ while on:
     if score_1 > -1:
         screen.blit(score_text, (432, 10))
     pygame.display.update()
-
 
     clock.tick(60)
