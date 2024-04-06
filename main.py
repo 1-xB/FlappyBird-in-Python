@@ -85,7 +85,7 @@ def pipes2(przeszkody_1):
 
 
 def kolizje(rect, pipes1):
-    global score_1, dead
+    global dead
     for kol in pipes1:
 
         if rect.colliderect(kol):
@@ -97,7 +97,7 @@ def kolizje(rect, pipes1):
 
 
 def kolizje2(rect, pipes1):
-    global score_1, dead
+    global dead
     for kol in pipes1:
         if rect.colliderect(kol):
             if not dead:
@@ -137,7 +137,7 @@ pygame.display.set_caption('Flappy Bird')
 pygame.display.set_icon(pygame.image.load('img/bird1.png').convert_alpha())
 
 font_for_score = pygame.font.Font('font/Pixeltype.ttf', 110)
-
+font_for_score1 = pygame.font.Font('font/Pixeltype.ttf', 60)
 # ground
 ground = pygame.image.load('img/ground.png').convert_alpha()
 ground_scroll = 0
@@ -171,6 +171,7 @@ przeszkody_1 = []
 start_menu = True
 napis_flappy = pygame.image.load('napis-FlappyBird.png').convert_alpha()
 napis_bigger = pygame.transform.scale(napis_flappy, (napis_flappy.get_width() * 4, napis_flappy.get_height() * 4))
+napis_rect = napis_bigger.get_rect(center=(432,100))
 
 play = pygame.image.load('play.png').convert_alpha()
 play_bigger = pygame.transform.scale(play, (play.get_width() * 3, play.get_height() * 3))
@@ -183,8 +184,22 @@ menu_bigger = pygame.transform.scale(menu, (menu.get_width() * 4, menu.get_heigh
 menu_rect = menu_bigger.get_rect(center=(432, 465))
 
 restart = pygame.image.load('img/restart.png').convert_alpha()
-restart_rect = restart.get_rect(center=(432, 515))
+restart_rect = restart.get_rect(center=(442, 455))
+
+exit1 = pygame.image.load('exit.png').convert_alpha()
+exit1_bigger = pygame.transform.scale(exit1, (exit1.get_width() * 3, exit1.get_height() * 3))
+
+exit_rect1 = exit1_bigger.get_rect(center=(442, 515))
+exit_rect2 = exit1_bigger.get_rect(center=(780, 900))
+
+
+game_over = pygame.image.load('GameoOver.png').convert_alpha()
+game_over_bigger = pygame.transform.scale(game_over, (game_over.get_width() * 4, game_over.get_height() * 4))
+game_over_rect = game_over_bigger.get_rect(center=(432, 265))
+
+
 background = pygame.image.load('img/bg.png').convert_alpha()
+
 
 while on:
     start_time = pygame.time.get_ticks()
@@ -194,11 +209,15 @@ while on:
             on = False
             pygame.quit()
             exit()
-
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if play_rect.collidepoint(event.pos):
-                print('xd')
-                start_menu = False
+        if start_menu:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if play_rect.collidepoint(event.pos):
+                    print('xd')
+                    start_menu = False
+                if exit_rect2.collidepoint(event.pos):
+                    on = False
+                    pygame.quit()
+                    exit()
 
         if dead:
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -208,6 +227,13 @@ while on:
                     przeszkody = []
                     przeszkody_1 = []
                     plane.rect.y = 432
+                if exit_rect1.collidepoint(event.pos):
+                    score_1 = -1
+                    dead = False
+                    przeszkody = []
+                    przeszkody_1 = []
+                    plane.rect.y = 432
+                    start_menu = True
 
         if event.type == plane_animation_timer:
             plane.plane_index += 1
@@ -247,26 +273,44 @@ while on:
     przeszkody_1 = pipes2(przeszkody_1)
     screen.blit(ground, (ground_scroll, 762))
     if start_menu:
-        screen.blit(napis_bigger, (250, 100))
+        screen.blit(napis_bigger, napis_rect)
         screen.blit(play_bigger, play_rect)
+        screen.blit(exit1_bigger, exit_rect2)
 
     if not dead:
+        try:
+            with open('score.json', 'r') as json_file:
+                score_data = json.load(json_file)
+            score_json = score_data["score"]
+        except:
+            score_json = 0
         ground_scroll -= ground_speed
         if abs(ground_scroll) > 35:
             ground_scroll = 0
     plane.draw()
 
     if dead:
+        score_text2 = font_for_score1.render(f'{score_1}', True, (255, 255, 255))
+        score_text_json = font_for_score1.render(f'{score_json}', True, (255, 255, 255))
         screen.blit(menu_bigger, menu_rect)
         screen.blit(restart, restart_rect)
+        screen.blit(exit1_bigger, exit_rect1)
+        screen.blit(score_text2, (295, 420))
+        screen.blit(score_text_json, (550, 420))
+        screen.blit(game_over_bigger, game_over_rect)
+        if score_1 >= score_json:
+            data = {"score": score_1}
+            with open('score.json', 'w') as new_json:
+                json.dump(data, new_json)
     if not dead:
+
         dead = kolizje(plane.rect, przeszkody)
     if not dead:
         dead = kolizje2(plane.rect, przeszkody_1)
         score_update()
     score_text = font_for_score.render(f'{score_1}', True, (255, 255, 255))
-    if score_1 > -1:
-        screen.blit(score_text, (432, 10))
+    if score_1 > -1 and not dead and not start_menu:
+        screen.blit(score_text, (422, 10))
     pygame.display.update()
 
     clock.tick(60)
