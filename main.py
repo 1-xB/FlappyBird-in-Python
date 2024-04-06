@@ -169,31 +169,31 @@ przeszkody_1 = []
 
 # menu start
 start_menu = True
-napis_flappy = pygame.image.load('napis-FlappyBird.png').convert_alpha()
+napis_flappy = pygame.image.load('img/napis-FlappyBird.png').convert_alpha()
 napis_bigger = pygame.transform.scale(napis_flappy, (napis_flappy.get_width() * 4, napis_flappy.get_height() * 4))
 napis_rect = napis_bigger.get_rect(center=(432,100))
 
-play = pygame.image.load('play.png').convert_alpha()
+play = pygame.image.load('img/play.png').convert_alpha()
 play_bigger = pygame.transform.scale(play, (play.get_width() * 3, play.get_height() * 3))
 play_rect = play_bigger.get_rect(center=(432, 550))
 
 #dead
 
-menu = pygame.image.load('dead-menu.png').convert_alpha()
+menu = pygame.image.load('img/dead-menu.png').convert_alpha()
 menu_bigger = pygame.transform.scale(menu, (menu.get_width() * 4, menu.get_height() * 4))
 menu_rect = menu_bigger.get_rect(center=(432, 465))
 
 restart = pygame.image.load('img/restart.png').convert_alpha()
 restart_rect = restart.get_rect(center=(442, 455))
 
-exit1 = pygame.image.load('exit.png').convert_alpha()
+exit1 = pygame.image.load('img/exit.png').convert_alpha()
 exit1_bigger = pygame.transform.scale(exit1, (exit1.get_width() * 3, exit1.get_height() * 3))
 
 exit_rect1 = exit1_bigger.get_rect(center=(442, 515))
 exit_rect2 = exit1_bigger.get_rect(center=(780, 900))
 
 
-game_over = pygame.image.load('GameoOver.png').convert_alpha()
+game_over = pygame.image.load('img/GameoOver.png').convert_alpha()
 game_over_bigger = pygame.transform.scale(game_over, (game_over.get_width() * 4, game_over.get_height() * 4))
 game_over_rect = game_over_bigger.get_rect(center=(432, 265))
 
